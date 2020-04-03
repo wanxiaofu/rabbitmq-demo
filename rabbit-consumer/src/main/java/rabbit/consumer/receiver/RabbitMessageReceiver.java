@@ -29,4 +29,19 @@ public class RabbitMessageReceiver {
     public void consumeMessage2(Map<String,Object> map){
         System.out.println("topic.* map = " + map.toString());
     }
+
+    @RabbitListener(queues = {"fanout.A"})
+    public void consumeMessage3(Map<String,Object> map){
+        System.out.println("fanout.A map = " + map.toString());
+    }
+
+    @RabbitListener(queues = {"fanout.B"})
+    public void consumeMessage4(Map<String,Object> map){
+        System.out.println("fanout.B map = " + map.toString());
+    }
+
+    @RabbitListener(queues = {"fanout.C"})
+    public void consumeMessage5(Map<String,Object> map){
+        System.out.println("fanout.C map = " + map.toString());
+    }
 }
