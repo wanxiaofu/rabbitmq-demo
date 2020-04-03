@@ -1,4 +1,4 @@
-package rabbit.provider.config;
+package rabbit.consumer.config;
 
 import org.springframework.amqp.core.*;
 
