@@ -82,6 +82,45 @@ public class SendMessageController {
         rabbitTemplate.convertAndSend("fanoutExchange", null, map);
         return "ok";
     }
+
+    /**
+     * 消息推送到server，但是在server里找不到交换机 测试回调函数
+     * 这种情况触发的是 ConfirmCallback 回调函数。
+     *
+     * @return ok
+     */
+    @GetMapping("/testMessageAck")
+    public String testMessageAck() {
+        String messageId = String.valueOf(UUID.randomUUID());
+        String messageData = "message: non-existent-exchange test message ";
+        String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Map<String, Object> map = new HashMap<>();
+        map.put("messageId", messageId);
+        map.put("messageData", messageData);
+        map.put("createTime", createTime);
+        //向不存在的交换机发送消息
+        rabbitTemplate.convertAndSend("non-existent-exchange", "TestDirectRouting", map);
+        return "ok";
+    }
+
+    /**
+     * 消息推送到server，找到交换机了，但是没找到队列
+     * 这种情况触发的是 ConfirmCallback和ReturnCallback两个回调函数。
+     * @return ok
+     */
+    @GetMapping("/testMessageAck2")
+    public String testMessageAck2() {
+        String messageId = String.valueOf(UUID.randomUUID());
+        String messageData = "message: lonelyDirectExchange test message ";
+        String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        Map<String, Object> map = new HashMap<>();
+        map.put("messageId", messageId);
+        map.put("messageData", messageData);
+        map.put("createTime", createTime);
+        rabbitTemplate.convertAndSend("lonelyDirectExchange", "TestDirectRouting", map);
+        return "ok";
+    }
+
 }
 
 
