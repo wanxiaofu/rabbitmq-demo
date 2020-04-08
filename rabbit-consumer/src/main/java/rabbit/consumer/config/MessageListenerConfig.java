@@ -32,8 +32,8 @@ public class MessageListenerConfig {
     @Bean
     public SimpleMessageListenerContainer simpleMessageListenerContainer() {
         SimpleMessageListenerContainer simpleMessageListenerContainer = new SimpleMessageListenerContainer(cachingConnectionFactory);
-        simpleMessageListenerContainer.setConcurrentConsumers(1);
-        simpleMessageListenerContainer.setMaxConcurrentConsumers(1);
+        simpleMessageListenerContainer.setConcurrentConsumers(5);
+        simpleMessageListenerContainer.setMaxConcurrentConsumers(10);
         //手动ack
         simpleMessageListenerContainer.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         //配置需要监听的队列

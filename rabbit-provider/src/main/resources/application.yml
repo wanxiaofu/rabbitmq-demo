@@ -16,3 +16,6 @@ spring:
     publisher-confirms: true
     #确认消息已发送到队列
     publisher-returns: true
+    listener:
+      simple:
+        acknowledge-mode: manual

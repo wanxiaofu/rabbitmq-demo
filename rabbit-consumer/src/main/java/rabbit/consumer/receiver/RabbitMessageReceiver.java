@@ -1,12 +1,16 @@
 package rabbit.consumer.receiver;
 
+import com.alibaba.fastjson.JSONObject;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
-import org.springframework.amqp.core.MessageListener;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.listener.api.ChannelAwareMessageListener;
+import org.springframework.amqp.support.AmqpHeaders;
+import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -98,6 +102,7 @@ public class RabbitMessageReceiver implements ChannelAwareMessageListener {
 
     }
 
+
     private HashMap<String, String> parseStr(String str) {
         String substring = str.substring(1, str.length() - 1);
         String[] strings = substring.split(",");
@@ -108,5 +113,74 @@ public class RabbitMessageReceiver implements ChannelAwareMessageListener {
             hashMap.put(key, value);
         }
         return hashMap;
+    }
+
+    /*@RabbitListener(queues = "queue_demo4")
+    public void process(Message message, @Headers Map<String, Object> headers, Channel channel) throws IOException {
+
+        // 获取消息Id
+        String messageId = message.getMessageProperties().getMessageId();
+        String msg = new String(message.getBody(), "UTF-8");
+        System.out.println("邮件消费者获取生产者消息msg:"+msg+",消息id"+messageId);
+
+        JSONObject jsonObject = JSONObject.parseObject(msg);
+        Integer timestamp = jsonObject.getInteger("timestamp");
+
+        try {
+            int result  = 1/timestamp;
+            System.out.println("result"+result);
+            //手动ack
+            Long deliveryTag = (Long) headers.get(AmqpHeaders.DELIVERY_TAG);
+            // 手动签收
+            channel.basicAck(deliveryTag, false);
+        } catch (Exception e) {
+            //拒绝消费消息（丢失消息） 给死信队列,第三个参数 false 表示不会重回队列
+            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
+        }
+
+    }*/
+
+    /*@RabbitListener(queues = {"task-queue"})
+    public void process(Message message, Channel channel) throws IOException {
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
+        try {
+            System.out.println("deliveryTag = " + deliveryTag);
+            System.out.println("queueName:" + message.getMessageProperties().getConsumerQueue());
+            String msg = new String(message.getBody(), StandardCharsets.UTF_8);
+            String messageId = message.getMessageProperties().getMessageId();
+            System.out.println("邮件消费者获取生产者消息msg:" + msg + ",消息id" + messageId);
+            JSONObject object = JSONObject.parseObject(msg);
+            Integer createTime = object.getInteger("createTime");
+            System.out.println("createTime = " + createTime);
+            //手动ack
+            channel.basicAck(deliveryTag, false);
+        } catch (Exception e) {
+            channel.basicReject(deliveryTag, false);
+            e.printStackTrace();
+        }
+
+
+    }*/
+
+    @RabbitListener(queues = {"dead-letter-queue"})
+    public void deadLetterProcess(Message message, Channel channel) throws IOException {
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
+        System.out.println("deliveryTag = " + deliveryTag);
+        try {
+            System.out.println("queueName:" + message.getMessageProperties().getConsumerQueue());
+            String msg = new String(message.getBody(), StandardCharsets.UTF_8);
+            String messageId = message.getMessageProperties().getMessageId();
+            System.out.println("邮件消费者获取生产者消息msg:" + msg + ",消息id" + messageId);
+            JSONObject object = JSONObject.parseObject(msg);
+            String createTime = object.getString("createTime");
+            System.out.println("createTime = " + createTime);
+            //手动ack
+            channel.basicAck(deliveryTag, false);
+        } catch (Exception e) {
+            channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, false);
+            e.printStackTrace();
+        }
+
+
     }
 }

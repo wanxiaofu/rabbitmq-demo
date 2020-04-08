@@ -1,5 +1,9 @@
 package rabbit.provider.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessageBuilder;
+import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -106,6 +110,7 @@ public class SendMessageController {
     /**
      * 消息推送到server，找到交换机了，但是没找到队列
      * 这种情况触发的是 ConfirmCallback和ReturnCallback两个回调函数。
+     *
      * @return ok
      */
     @GetMapping("/testMessageAck2")
@@ -118,6 +123,26 @@ public class SendMessageController {
         map.put("messageData", messageData);
         map.put("createTime", createTime);
         rabbitTemplate.convertAndSend("lonelyDirectExchange", "TestDirectRouting", map);
+        return "ok";
+    }
+
+    @GetMapping("/testDeadLetter")
+    public String testDeadLetter() {
+        String messageId = String.valueOf(UUID.randomUUID());
+        String messageData = "message: dead letter test message ";
+        String createTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        JSONObject jsonObject = new JSONObject();
+
+        jsonObject.put("messageId", messageId);
+        jsonObject.put("messageData", messageData);
+        jsonObject.put("createTime", createTime);
+        String jsonString = jsonObject.toJSONString();
+        Message message = MessageBuilder
+                .withBody(jsonString.getBytes())
+                .setContentType(MessageProperties.CONTENT_TYPE_JSON)
+                .setContentEncoding("utf-8")
+                .setMessageId(UUID.randomUUID().toString()).build();
+        rabbitTemplate.convertAndSend("task-directExchange", "task-routing-key", message);
         return "ok";
     }
 
