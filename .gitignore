@@ -7,5 +7,4 @@
 *.iml
 .idea/
 
-/wjj-saas-system/src/main/java/com/wjj/application/TestGenMy.java
-/wjj-saas-system/src/test/java/com/wjj/application/service/medicalhistory
+
